@@ -14,6 +14,7 @@ const app: Express = express();
 const port = process.env.PORT;
 const midiAddress = process.env.MIDI_ADDRESS;
 const providerEndpoint = process.env.PROVIDER_ENDPOINT;
+const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 300_000;
 
 const insertMidi = async (
   supabase: SupabaseClient,
@@ -313,7 +314,7 @@ app.listen(port, async () => {
   setInterval(() => {
     indexMetadata(supabase, midiInstance);
     indexDevices(supabase, midiInstance);
-  }, 60 * 1000); // 60 * 1000 milsec
+  }, timeout);
 
   console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
 });
