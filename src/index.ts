@@ -14,7 +14,7 @@ const app: Express = express();
 const port = process.env.PORT;
 const midiAddress = process.env.MIDI_ADDRESS;
 const providerEndpoint = process.env.PROVIDER_ENDPOINT;
-const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 300_000;
+const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 300000; // defaults to 5 minutes
 
 const insertMidi = async (
   supabase: SupabaseClient,
