@@ -1,5 +1,5 @@
 import { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
-import { MIDIMetadata } from "../types/midi.types";
+import { MIDIMetadata, MIDIRow } from "../types/midi.types";
 
 export interface CreateParams {
   id: number;
@@ -10,6 +10,10 @@ export interface CreateParams {
 
 export interface Midi {
   create(p: CreateParams): Promise<{ error: PostgrestError | null }>;
+  fetch(): Promise<{
+    error: PostgrestError | null;
+    data: MIDIRow[];
+  }>;
 }
 
 export const midi = (supabase: SupabaseClient): Midi => {
@@ -24,5 +28,18 @@ export const midi = (supabase: SupabaseClient): Midi => {
     return { error };
   };
 
-  return { create };
+  /**
+   * used for validity indexing
+   * @returns all MIDI rows
+   */
+  const fetch = async () => {
+    const { error, data } = (await supabase.from("midi").select()) as {
+      error: PostgrestError | null;
+      data: MIDIRow[];
+    };
+
+    return { error, data };
+  };
+
+  return { create, fetch };
 };

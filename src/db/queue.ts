@@ -12,7 +12,7 @@ export interface Queue {
   create(id: BigNumber, error: string, operator: string): Promise<void>;
   remove(id: BigNumber): Promise<void>;
   update(p: UpdateParams): Promise<void>;
-  fetch(): Promise<QueueRow[]>;
+  fetch(attempts: number): Promise<QueueRow[]>;
 }
 
 export const queue = (supabase: SupabaseClient): Queue => {
@@ -62,11 +62,11 @@ export const queue = (supabase: SupabaseClient): Queue => {
    * where processing attempts are less than 10
    * @returns everything in the queue
    */
-  const fetch = async (): Promise<QueueRow[]> => {
+  const fetch = async (attempts: number): Promise<QueueRow[]> => {
     const { error, data } = (await supabase
       .from("queue")
       .select()
-      .lt("attempts", 10)) as {
+      .lt("attempts", attempts)) as {
       error: PostgrestError | null;
       data: QueueRow[];
     };
