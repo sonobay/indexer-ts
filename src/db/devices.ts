@@ -17,7 +17,7 @@ export const devices = (supabase: SupabaseClient): Devices => {
       .from("devices")
       .insert({
         name,
-        manufacturer: manufacturer,
+        manufacturer,
       })
       .select()) as { data: DeviceRow[]; error: PostgrestError | null };
 

@@ -9,6 +9,7 @@ export type MIDIMetadata = {
       name: string;
       midi: string;
       image: string | undefined;
+      tags: string[] | undefined;
     }[];
   };
 };

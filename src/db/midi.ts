@@ -18,11 +18,18 @@ export interface Midi {
 
 export const midi = (supabase: SupabaseClient): Midi => {
   const create = async ({ id, metadata, device, createdBy }: CreateParams) => {
+    const tags = metadata.properties.entries
+      .map((midi) => midi.tags ?? [])
+      .flat()
+      .map((tag) => tag?.toUpperCase())
+      .map((tag) => tag.trim());
+
     const { error } = await supabase.from("midi").insert({
       id: id,
       metadata,
       device,
       createdBy,
+      tags,
     });
 
     return { error };
