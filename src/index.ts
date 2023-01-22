@@ -57,41 +57,47 @@ const indexById = async ({
   /**
    * Check if metadata has device in properties
    */
-  if (metadata.properties.device) {
-    let device = await db.devices.fetchByName({
-      deviceName: metadata.properties.device,
-    });
+  if (metadata.properties.devices) {
+    const devices: string[] = [];
 
-    /**
-     * No device found in DB
-     * Create a new one
-     */
-    if (!device) {
-      const createdDevice = await db.devices.create({
-        name: metadata.properties.device,
-        manufacturer: metadata.properties.manufacturer ?? "",
+    for (const device of metadata.properties.devices) {
+      let existingDevice = await db.devices.fetchByName({
+        deviceName: device.name,
       });
 
       /**
-       * Creating the device failed
+       * No device found in DB
+       * Create a new one
        */
-      if (!createdDevice) {
-        console.error("creating device failed");
-        return {
-          error: `creating device failed failed for ${metadata.properties.manufacturer}: ${metadata.properties.device}`,
-        };
-      }
+      if (existingDevice) {
+        devices.push(existingDevice.id);
+      } else {
+        const createdDevice = await db.devices.create({
+          name: device.name,
+          manufacturer: device.manufacturer ?? "",
+        });
 
-      /**
-       * otherwise we assign device
-       */
-      device = createdDevice;
+        /**
+         * Creating the device failed
+         */
+        if (!createdDevice) {
+          console.error("creating device failed");
+          return {
+            error: `creating device failed failed for ${device.manufacturer}: ${device.name}`,
+          };
+        }
+
+        /**
+         * otherwise we assign device
+         */
+        // device = createdDevice;
+        devices.push(createdDevice.id);
+      }
     }
 
     const { error } = await db.midi.create({
       id,
       metadata,
-      device: device.id,
       createdBy: operator,
     });
 
@@ -100,6 +106,13 @@ const indexById = async ({
       return {
         error: `failed creating midi: ${error.details} ${error.message}`,
       };
+    }
+
+    /**
+     * Restrict indexing to a maximum of 5 devices per MIDI
+     */
+    for (let i = 0; i < 5; i++) {
+      await db.midiDevices.create({ tokenId: id, device: devices[i] });
     }
 
     return { error: undefined };

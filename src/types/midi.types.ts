@@ -3,8 +3,10 @@ export type MIDIMetadata = {
   description: string;
   image: string;
   properties: {
-    device?: string;
-    manufacturer?: string;
+    devices?: {
+      name: string;
+      manufacturer: string;
+    }[];
     entries: {
       name: string;
       midi: string;

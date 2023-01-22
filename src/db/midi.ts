@@ -4,7 +4,6 @@ import { MIDIMetadata, MIDIRow } from "../types/midi.types";
 export interface CreateParams {
   id: number;
   metadata: MIDIMetadata;
-  device: number;
   createdBy: string;
 }
 
@@ -17,7 +16,7 @@ export interface Midi {
 }
 
 export const midi = (supabase: SupabaseClient): Midi => {
-  const create = async ({ id, metadata, device, createdBy }: CreateParams) => {
+  const create = async ({ id, metadata, createdBy }: CreateParams) => {
     const tags = metadata.properties.entries
       .map((midi) => midi.tags ?? [])
       .flat()
@@ -25,9 +24,8 @@ export const midi = (supabase: SupabaseClient): Midi => {
       .map((tag) => tag.trim());
 
     const { error } = await supabase.from("midi").insert({
-      id: id,
+      id,
       metadata,
-      device,
       createdBy,
       tags,
     });

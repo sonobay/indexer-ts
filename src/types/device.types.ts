@@ -1,5 +1,5 @@
 export type DeviceRow = {
-  id: number;
+  id: string;
   createdAt: number;
   name: string;
   manufacturer?: string;
