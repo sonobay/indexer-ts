@@ -61,8 +61,9 @@ const indexById = async ({
     const devices: string[] = [];
 
     for (const device of metadata.properties.devices) {
-      let existingDevice = await db.devices.fetchByName({
-        deviceName: device.name,
+      let existingDevice = await db.devices.fetch({
+        name: device.name,
+        manufacturer: device.manufacturer,
       });
 
       /**

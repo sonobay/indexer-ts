@@ -1,18 +1,18 @@
 import { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { DeviceRow } from "../types/device.types";
 
-interface CreateParams {
+interface Params {
   name: string;
   manufacturer: string;
 }
 
 export interface Devices {
-  fetchByName(p: { deviceName: string }): Promise<DeviceRow | undefined>;
-  create(p: CreateParams): Promise<DeviceRow | undefined>;
+  fetch(p: Params): Promise<DeviceRow | undefined>;
+  create(p: Params): Promise<DeviceRow | undefined>;
 }
 
 export const devices = (supabase: SupabaseClient): Devices => {
-  const create = async ({ name, manufacturer }: CreateParams) => {
+  const create = async ({ name, manufacturer }: Params) => {
     const { data, error } = (await supabase
       .from("devices")
       .insert({
@@ -37,21 +37,22 @@ export const devices = (supabase: SupabaseClient): Devices => {
     return data[0];
   };
 
-  const fetchByName = async ({ deviceName }: { deviceName: string }) => {
+  const fetch = async ({ name, manufacturer }: Params) => {
     const { error, data } = (await supabase
       .from("devices")
       .select()
-      .ilike("name", `%${deviceName.toLowerCase()}%`)
+      .ilike("name", `%${name.toLowerCase()}%`)
+      .ilike("manufacturer", `%${manufacturer.toLowerCase()}%`)
       .limit(1)
       .single()) as { error: PostgrestError | null; data: DeviceRow };
 
     if (error) {
-      console.error(`error fetchDeviceByName searching ${deviceName}`, error);
+      console.error(`error fetchDeviceByName searching ${name}`, error);
       return;
     }
 
     return data;
   };
 
-  return { fetchByName, create };
+  return { fetch, create };
 };
