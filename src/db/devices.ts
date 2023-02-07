@@ -47,7 +47,10 @@ export const devices = (supabase: SupabaseClient): Devices => {
       .single()) as { error: PostgrestError | null; data: DeviceRow };
 
     if (error) {
-      console.error(`error fetchDeviceByName searching ${name}`, error);
+      console.error(
+        `error fetching device searching ${name} ${manufacturer}`,
+        error
+      );
       return;
     }
 
