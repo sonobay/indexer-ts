@@ -109,10 +109,12 @@ const indexById = async ({
       };
     }
 
+    const deviceIndexLength = devices.length <= 5 ? devices.length : 5;
+
     /**
      * Restrict indexing to a maximum of 5 devices per MIDI
      */
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < deviceIndexLength; i++) {
       await db.midiDevices.create({ tokenId: id, device: devices[i] });
     }
 

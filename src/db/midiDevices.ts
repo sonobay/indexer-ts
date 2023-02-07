@@ -8,10 +8,6 @@ export interface CreateParams {
 
 export interface MidiDevices {
   create(p: CreateParams): Promise<{ error: PostgrestError | null }>;
-  // fetch(): Promise<{
-  //   error: PostgrestError | null;
-  //   data: MIDIRow[];
-  // }>;
 }
 
 /**
