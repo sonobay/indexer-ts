@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { devices, Devices } from "./devices";
+import { Listings, listings } from "./listings";
 import { Midi, midi } from "./midi";
 import { midiDevices, MidiDevices } from "./midiDevices";
 import { Queue, queue } from "./queue";
@@ -9,6 +10,7 @@ export interface DB {
   midi: Midi;
   devices: Devices;
   midiDevices: MidiDevices;
+  listings: Listings;
 }
 
 export const init = (supabase: SupabaseClient): DB => {
@@ -17,5 +19,6 @@ export const init = (supabase: SupabaseClient): DB => {
     midi: midi(supabase),
     devices: devices(supabase),
     midiDevices: midiDevices(supabase),
+    listings: listings(supabase),
   };
 };

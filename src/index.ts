@@ -12,12 +12,14 @@ import fetch from "node-fetch";
 import { MIDIMetadata } from "./types/midi.types";
 import { createDB } from "./supabase";
 import { DB, init } from "./db";
+import { marketAbi } from "./abis/market.abi";
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
 const midiAddress = process.env.MIDI_ADDRESS;
+const marketAddress = process.env.MARKET_ADDRESS;
 const providerEndpoint = process.env.PROVIDER_ENDPOINT;
 const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 300000; // defaults to 5 minutes
 const validityCheckTimeout = process.env.VALIDITY_CHECK_TIMEOUT
@@ -222,6 +224,10 @@ app.listen(port, async () => {
     throw new Error("process.env.MIDI_ADDRESS not set");
   }
 
+  if (!marketAddress) {
+    throw new Error("process.env.MARKET_ADDRESS not set");
+  }
+
   if (!providerEndpoint) {
     throw new Error("process.env.PROVIDER_ENDPOINT not set");
   }
@@ -231,6 +237,12 @@ app.listen(port, async () => {
   const midiInstance = new Contract(
     midiAddress,
     midiAbi,
+    getDefaultProvider(providerEndpoint)
+  );
+
+  const marketInstance = new Contract(
+    marketAddress,
+    marketAbi,
     getDefaultProvider(providerEndpoint)
   );
 
@@ -262,6 +274,25 @@ app.listen(port, async () => {
           db.queue.create(id, error, operator);
         }
       }
+    }
+  );
+
+  marketInstance.on(
+    "ListingCreated",
+    async (
+      tokenId: BigNumber,
+      listingAddress: string,
+      amount: BigNumber,
+      price: BigNumber,
+      lister: string
+    ) => {
+      db.listings.create({
+        tokenId,
+        listingAddress,
+        amount,
+        price,
+        lister,
+      });
     }
   );
 
