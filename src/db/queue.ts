@@ -68,14 +68,14 @@ export const queue = (supabase: SupabaseClient): Queue => {
       .select()
       .lt("attempts", attempts)) as {
       error: PostgrestError | null;
-      data: QueueRow[];
+      data: QueueRow[] | null;
     };
 
     if (error) {
       console.error(`error fetching queue rows: `, error);
     }
 
-    return data;
+    return data ?? [];
   };
 
   return { create, update, remove, fetch };
