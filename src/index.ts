@@ -239,6 +239,10 @@ app.listen(port, async () => {
     logger.fatal("!!! WEBSOCKET HAS CLOSED !!!");
   });
 
+  provider._websocket.on("open", () => {
+    logger.info("websocket opened");
+  });
+
   const midiInstance = new Contract(midiAddress, midiAbi, provider);
 
   const marketInstance = new Contract(marketAddress, marketAbi, provider);
