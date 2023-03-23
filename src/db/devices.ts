@@ -1,4 +1,5 @@
 import { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+import { logger } from "..";
 import { DeviceRow } from "../types/device.types";
 
 interface Params {
@@ -22,15 +23,16 @@ export const devices = (supabase: SupabaseClient): Devices => {
       .select()) as { data: DeviceRow[]; error: PostgrestError | null };
 
     if (error) {
-      console.error(
-        `error creating new device: name: ${name} manufacturer: ${manufacturer} `,
-        error
+      logger.error(
+        error,
+        `error creating new device: name: ${name} manufacturer: ${manufacturer} `
       );
+
       return;
     }
 
     if (!data || data.length <= 0) {
-      console.error("data not found creating new device");
+      logger.error("data not found creating new device");
       return;
     }
 
@@ -47,10 +49,7 @@ export const devices = (supabase: SupabaseClient): Devices => {
       .single()) as { error: PostgrestError | null; data: DeviceRow };
 
     if (error) {
-      console.error(
-        `error fetching device searching ${name} ${manufacturer}`,
-        error
-      );
+      logger.error(error, "data not found creating new device");
       return;
     }
 

@@ -1,5 +1,6 @@
 import { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { BigNumber } from "ethers";
+import { logger } from "..";
 import { QueueRow } from "../types/queue.types";
 
 export interface UpdateParams {
@@ -24,12 +25,14 @@ export const queue = (supabase: SupabaseClient): Queue => {
       operator,
     });
 
-    if (error) {
-      console.error(
-        `error inserting ${id.toNumber()} to queue: `,
-        postgresError
+    if (postgresError) {
+      logger.error(
+        postgresError,
+        `error inserting ${id.toNumber()} to queue: `
       );
     }
+
+    return;
   };
 
   const remove = async (id: BigNumber) => {
@@ -39,8 +42,10 @@ export const queue = (supabase: SupabaseClient): Queue => {
       .eq("id", id.toNumber());
 
     if (error) {
-      console.error(`error deleting ${id.toNumber()} from queue: `, error);
+      logger.error(error, `error deleting ${id.toNumber()} from queue`);
     }
+
+    return;
   };
 
   /**
@@ -52,9 +57,11 @@ export const queue = (supabase: SupabaseClient): Queue => {
       .update({ attempts, error: error })
       .eq("id", id);
 
-    if (error) {
-      console.error(`error deleting ${id} from queue: `, postgresError);
+    if (postgresError) {
+      logger.error(postgresError, `error deleting ${id} from queue`);
     }
+
+    return;
   };
 
   /**
@@ -72,7 +79,7 @@ export const queue = (supabase: SupabaseClient): Queue => {
     };
 
     if (error) {
-      console.error(`error fetching queue rows: `, error);
+      logger.error(error, `error fetching queue rows`);
     }
 
     return data ?? [];

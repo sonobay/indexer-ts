@@ -1,18 +1,17 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
-import {
-  BigNumber,
-  Contract,
-  getDefaultProvider,
-  constants,
-  ethers,
-} from "ethers";
+import { BigNumber, Contract, constants, ethers } from "ethers";
 import { midiAbi } from "./abis/midi.abi";
 import fetch from "node-fetch";
 import { MIDIMetadata } from "./types/midi.types";
 import { createDB } from "./supabase";
 import { DB, init } from "./db";
 import { marketAbi } from "./abis/market.abi";
+import pino from "pino";
+
+export const logger = pino({
+  name: "sonobay-indexer",
+});
 
 dotenv.config();
 
@@ -31,11 +30,11 @@ const fetchMetadata = async (id: number, midiInstance: Contract) => {
   uri = uri.replace("ipfs://", "https://nftstorage.link/ipfs/");
   const res = await fetch(uri);
   if (!res.ok) {
-    console.error("error fetching ", uri);
+    logger.error(`error fetching: ${uri} `);
+
     return;
   }
   const metadata = (await res.json()) as MIDIMetadata;
-  console.log("metadata is: ", metadata);
   return metadata;
 };
 
@@ -84,7 +83,7 @@ const indexById = async ({
          * Creating the device failed
          */
         if (!createdDevice) {
-          console.error("creating device failed");
+          logger.error("creating device failed");
           return {
             error: `creating device failed failed for ${device.manufacturer}: ${device.name}`,
           };
@@ -105,7 +104,7 @@ const indexById = async ({
     });
 
     if (error) {
-      console.error("error updating midi metadata: ", error);
+      logger.error(error, "error updating midi metadata");
       return {
         error: `failed creating midi: ${error.details} ${error.message}`,
       };
@@ -152,7 +151,7 @@ const fetchOriginalMinter = async (id: number, midiInstance: Contract) => {
   );
 
   if (!targetEvent) {
-    console.log("target event found!!!");
+    logger.error("no target event found");
     return;
   }
 
@@ -210,7 +209,7 @@ const sync = async ({
        */
       const operator = await fetchOriginalMinter(id, midiInstance);
       if (!operator) {
-        console.error(`failed fetching operator for ${id}`);
+        logger.error(`failed fetching operator for ${id}`);
         return;
       }
 
@@ -237,7 +236,7 @@ app.listen(port, async () => {
   const provider = new ethers.providers.WebSocketProvider(providerEndpoint);
 
   provider._websocket.on("close", () => {
-    console.log("!!! WEBSOCKET HAS CLOSED !!!");
+    logger.fatal("!!! WEBSOCKET HAS CLOSED !!!");
   });
 
   const midiInstance = new Contract(midiAddress, midiAbi, provider);
@@ -249,10 +248,15 @@ app.listen(port, async () => {
   midiInstance.on(
     "TransferSingle",
     async (operator: string, from: string, to: string, id: BigNumber) => {
-      console.log("operator: ", operator);
-      console.log("from: ", from);
-      console.log("to: ", to);
-      console.log("id: ", id);
+      logger.info(
+        {
+          operator,
+          from,
+          to,
+          id,
+        },
+        "on.TransferSingle"
+      );
 
       /**
        * newly minted
@@ -284,6 +288,16 @@ app.listen(port, async () => {
       price: BigNumber,
       lister: string
     ) => {
+      logger.info(
+        {
+          tokenId,
+          listingAddress,
+          amount,
+          price,
+          lister,
+        },
+        "on.ListingCreated"
+      );
       db.listings.create({
         tokenId,
         listingAddress,
@@ -335,5 +349,5 @@ app.listen(port, async () => {
     sync({ db, midiInstance });
   }, validityCheckTimeout);
 
-  console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
+  logger.info(`⚡️[sonobay-indexer]: running at https://localhost:${port}`);
 });
