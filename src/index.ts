@@ -234,17 +234,15 @@ app.listen(port, async () => {
 
   const supabase = await createDB();
 
-  const midiInstance = new Contract(
-    midiAddress,
-    midiAbi,
-    getDefaultProvider(providerEndpoint)
-  );
+  const provider = new ethers.providers.WebSocketProvider(providerEndpoint);
 
-  const marketInstance = new Contract(
-    marketAddress,
-    marketAbi,
-    getDefaultProvider(providerEndpoint)
-  );
+  provider._websocket.on("close", () => {
+    console.log("!!! WEBSOCKET HAS CLOSED !!!");
+  });
+
+  const midiInstance = new Contract(midiAddress, midiAbi, provider);
+
+  const marketInstance = new Contract(marketAddress, marketAbi, provider);
 
   const db = init(supabase);
 
