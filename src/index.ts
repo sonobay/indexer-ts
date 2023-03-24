@@ -8,6 +8,7 @@ import { createDB } from "./supabase";
 import { DB, init } from "./db";
 import { marketAbi } from "./abis/market.abi";
 import pino from "pino";
+import { WebSocketProvider } from "./websocket-provider";
 
 export const logger = pino({
   name: "sonobay-indexer",
@@ -233,7 +234,8 @@ app.listen(port, async () => {
 
   const supabase = await createDB();
 
-  const provider = new ethers.providers.WebSocketProvider(providerEndpoint);
+  // const provider = new ethers.providers.WebSocketProvider(providerEndpoint);
+  const provider = new WebSocketProvider(providerEndpoint);
 
   provider._websocket.on("close", () => {
     logger.fatal("!!! WEBSOCKET HAS CLOSED !!!");
