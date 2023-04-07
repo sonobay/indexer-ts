@@ -259,7 +259,7 @@ app.listen(port, async () => {
           operator,
           from,
           to,
-          id,
+          id: id.toString(),
         },
         "on.TransferSingle"
       );

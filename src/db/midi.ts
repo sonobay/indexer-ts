@@ -27,7 +27,7 @@ export const midi = (supabase: SupabaseClient): Midi => {
       id,
       metadata,
       createdBy,
-      tags,
+      tags: [...new Set(tags)],
     });
 
     return { error };
