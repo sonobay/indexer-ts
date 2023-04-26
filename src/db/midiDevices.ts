@@ -8,7 +8,6 @@ export interface CreateParams {
 
 export interface MidiDevices {
   create(p: CreateParams): Promise<{ error: PostgrestError | null }>;
-  burn(id: number): Promise<{ error: PostgrestError | null }>;
 }
 
 /**
@@ -26,17 +25,5 @@ export const midiDevices = (supabase: SupabaseClient): MidiDevices => {
     return { error };
   };
 
-  /**
-   * delete when total amount burned
-   */
-  const burn = async (id: number) => {
-    const { error } = await supabase
-      .from("midi_devices")
-      .delete()
-      .eq("midi", id);
-
-    return { error };
-  };
-
-  return { create, burn };
+  return { create };
 };
