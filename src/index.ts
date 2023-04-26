@@ -224,7 +224,7 @@ const sync = async ({
   }
 };
 
-const handleBurn = async ({
+const updateSupply = async ({
   id,
   midiInstance,
   db,
@@ -238,13 +238,7 @@ const handleBurn = async ({
    */
   const totalSupply = await midiInstance.totalSupply(id);
 
-  /**
-   * If total supply is 0, we can remove the midi from the DB
-   */
-  if (totalSupply <= 0) {
-    await db.midiDevices.burn(id.toNumber());
-    await db.midi.burn(id.toNumber());
-  }
+  await db.midi.updateSupply(id.toNumber(), totalSupply.toNumber());
 };
 
 app.listen(port, async () => {
@@ -322,7 +316,7 @@ app.listen(port, async () => {
        * burn
        */
       if (to === constants.AddressZero) {
-        await handleBurn({ id, midiInstance, db });
+        await updateSupply({ id, midiInstance, db });
       }
     }
   );

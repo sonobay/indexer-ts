@@ -14,7 +14,10 @@ export interface Midi {
     error: PostgrestError | null;
     data: MIDIRow[];
   }>;
-  burn(id: number): Promise<{ error: PostgrestError | null }>;
+  updateSupply(
+    id: number,
+    totalSupply: number
+  ): Promise<{ error: PostgrestError | null }>;
 }
 
 export const midi = (supabase: SupabaseClient): Midi => {
@@ -55,14 +58,16 @@ export const midi = (supabase: SupabaseClient): Midi => {
   };
 
   /**
-   * delete when total amount burned
-   * @param id
+   * Updates supply
    */
-  const burn = async (id: number) => {
-    const { error } = await supabase.from("midi").delete().eq("id", id);
+  const updateSupply = async (id: number, totalSupply: number) => {
+    const { error } = await supabase
+      .from("midi")
+      .update({ totalSupply })
+      .eq("id", id);
 
     return { error };
   };
 
-  return { create, fetch, burn };
+  return { create, fetch, updateSupply };
 };
