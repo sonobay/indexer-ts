@@ -44,11 +44,13 @@ const indexById = async ({
   id,
   operator,
   midiInstance,
+  amount,
 }: {
   db: DB;
   id: number;
   operator: string;
   midiInstance: Contract;
+  amount: BigNumber;
 }): Promise<{ error: string | undefined }> => {
   const metadata = await fetchMetadata(id, midiInstance);
 
@@ -102,6 +104,7 @@ const indexById = async ({
       id,
       metadata,
       createdBy: operator,
+      totalSupply: amount.toNumber(),
     });
 
     if (error) {
@@ -214,7 +217,9 @@ const sync = async ({
         return;
       }
 
-      indexById({ db, id, midiInstance, operator });
+      const supply = await midiInstance.totalSupply(id);
+
+      indexById({ db, id, midiInstance, operator, amount: supply });
     }
   }
 };
@@ -276,7 +281,13 @@ app.listen(port, async () => {
 
   midiInstance.on(
     "TransferSingle",
-    async (operator: string, from: string, to: string, id: BigNumber) => {
+    async (
+      operator: string,
+      from: string,
+      to: string,
+      id: BigNumber,
+      amount: BigNumber
+    ) => {
       logger.info(
         {
           operator,
@@ -296,6 +307,7 @@ app.listen(port, async () => {
           id: id.toNumber(),
           operator,
           midiInstance,
+          amount,
         });
 
         /**
@@ -357,11 +369,14 @@ app.listen(port, async () => {
      * loop
      */
     for (const row of queue) {
+      const supply = await midiInstance.totalSupply(row.id);
+
       const { error } = await indexById({
         db,
         id: row.id,
         midiInstance,
         operator: row.operator,
+        amount: supply,
       });
 
       /**

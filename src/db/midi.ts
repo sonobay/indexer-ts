@@ -5,6 +5,7 @@ export interface CreateParams {
   id: number;
   metadata: MIDIMetadata;
   createdBy: string;
+  totalSupply: number;
 }
 
 export interface Midi {
@@ -17,7 +18,12 @@ export interface Midi {
 }
 
 export const midi = (supabase: SupabaseClient): Midi => {
-  const create = async ({ id, metadata, createdBy }: CreateParams) => {
+  const create = async ({
+    id,
+    metadata,
+    createdBy,
+    totalSupply,
+  }: CreateParams) => {
     const tags = metadata.properties.entries
       .map((midi) => midi.tags ?? [])
       .flat()
@@ -29,6 +35,7 @@ export const midi = (supabase: SupabaseClient): Midi => {
       metadata,
       createdBy,
       tags: [...new Set(tags)],
+      totalSupply,
     });
 
     return { error };
