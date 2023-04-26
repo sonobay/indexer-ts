@@ -13,6 +13,7 @@ export interface Midi {
     error: PostgrestError | null;
     data: MIDIRow[];
   }>;
+  burn(id: number): Promise<{ error: PostgrestError | null }>;
 }
 
 export const midi = (supabase: SupabaseClient): Midi => {
@@ -46,5 +47,15 @@ export const midi = (supabase: SupabaseClient): Midi => {
     return { error, data };
   };
 
-  return { create, fetch };
+  /**
+   * delete when total amount burned
+   * @param id
+   */
+  const burn = async (id: number) => {
+    const { error } = await supabase.from("midi").delete().eq("id", id);
+
+    return { error };
+  };
+
+  return { create, fetch, burn };
 };

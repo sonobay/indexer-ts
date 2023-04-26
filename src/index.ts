@@ -219,6 +219,29 @@ const sync = async ({
   }
 };
 
+const handleBurn = async ({
+  id,
+  midiInstance,
+  db,
+}: {
+  id: BigNumber;
+  midiInstance: Contract;
+  db: DB;
+}) => {
+  /**
+   * fetch total supply by id
+   */
+  const totalSupply = await midiInstance.totalSupply(id);
+
+  /**
+   * If total supply is 0, we can remove the midi from the DB
+   */
+  if (totalSupply <= 0) {
+    await db.midiDevices.burn(id.toNumber());
+    await db.midi.burn(id.toNumber());
+  }
+};
+
 app.listen(port, async () => {
   if (!midiAddress) {
     throw new Error("process.env.MIDI_ADDRESS not set");
@@ -281,6 +304,13 @@ app.listen(port, async () => {
         if (error) {
           db.queue.create(id, error, operator);
         }
+      }
+
+      /**
+       * burn
+       */
+      if (to === constants.AddressZero) {
+        await handleBurn({ id, midiInstance, db });
       }
     }
   );

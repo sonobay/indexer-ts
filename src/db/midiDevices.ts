@@ -8,6 +8,7 @@ export interface CreateParams {
 
 export interface MidiDevices {
   create(p: CreateParams): Promise<{ error: PostgrestError | null }>;
+  burn(id: number): Promise<{ error: PostgrestError | null }>;
 }
 
 /**
@@ -26,18 +27,16 @@ export const midiDevices = (supabase: SupabaseClient): MidiDevices => {
   };
 
   /**
-   * used for validity indexing
-   * @returns all MIDI rows
+   * delete when total amount burned
    */
-  // const fetch = async () => {
-  //   const { error, data } = (await supabase.from("midi").select()) as {
-  //     error: PostgrestError | null;
-  //     data: MIDIRow[];
-  //   };
+  const burn = async (id: number) => {
+    const { error } = await supabase
+      .from("midi_devices")
+      .delete()
+      .eq("midi", id);
 
-  //   return { error, data };
-  // };
+    return { error };
+  };
 
-  // return { create, fetch };
-  return { create };
+  return { create, burn };
 };
