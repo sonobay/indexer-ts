@@ -27,17 +27,23 @@ export const midi = (supabase: SupabaseClient): Midi => {
     createdBy,
     totalSupply,
   }: CreateParams) => {
-    const tags = metadata.properties.entries
+    const entryTags = metadata.properties.entries
       .map((midi) => midi.tags ?? [])
       .flat()
       .map((tag) => tag?.toUpperCase())
       .map((tag) => tag.trim());
 
+    const packTags = metadata.properties.tags
+      ? metadata.properties.tags
+          .map((tag) => tag?.toUpperCase())
+          .map((tag) => tag.trim())
+      : [];
+
     const { error } = await supabase.from("midi").insert({
       id,
       metadata,
       createdBy,
-      tags: [...new Set(tags)],
+      tags: [...new Set([...entryTags, ...packTags])],
       totalSupply,
     });
 

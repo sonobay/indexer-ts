@@ -7,6 +7,7 @@ export type MIDIMetadata = {
       name: string;
       manufacturer: string;
     }[];
+    tags: string[];
     entries: {
       name: string;
       midi: string;
